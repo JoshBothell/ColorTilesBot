@@ -50,7 +50,7 @@ def set_colors(colors_list):
 
 def check_neighbors(color_array, current_space):
     x, y = current_space
-    north = "Edge"
+    north = ["Edge", (0, 0)]
     if y != 0:
         distance = 1  # distance from current space
         while distance <= y:
@@ -58,9 +58,10 @@ def check_neighbors(color_array, current_space):
                 distance += 1
                 continue
             else:
-                north = color_array[y-distance][x]
+                north[0] = color_array[y-distance][x]
+                north[1] = (x, y-distance)
                 break
-    east = "Edge"
+    east = ["Edge", (0, 0)]
     if x != tilesX-1:
         distance = 1
         while distance < (tilesX-x):
@@ -68,9 +69,10 @@ def check_neighbors(color_array, current_space):
                 distance += 1
                 continue
             else:
-                east = color_array[y][x+distance]
+                east[0] = color_array[y][x+distance]
+                east[1] = (x+distance, y)
                 break
-    south = "Edge"
+    south = ["Edge", (0, 0)]
     if y != tilesY-1:
         distance = 1
         while distance < (tilesY-y):
@@ -78,9 +80,10 @@ def check_neighbors(color_array, current_space):
                 distance += 1
                 continue
             else:
-                south = color_array[y+distance][x]
+                south[0] = color_array[y+distance][x]
+                south[1] = (x, y+distance)
                 break
-    west = "Edge"
+    west = ["Edge", (0, 0)]
     if x != 0:
         distance = 1
         while distance <= x:
@@ -88,14 +91,36 @@ def check_neighbors(color_array, current_space):
                 distance += 1
                 continue
             else:
-                west = color_array[y][x-distance]
+                west[0] = color_array[y][x-distance]
+                west[1] = (x-distance, y)
                 break
     neighbors = [north, south, east, west]
-    color_counts = Counter(item for item in neighbors if item != "Edge")
-    for count in color_counts.values():
-        if count == 2 or count == 4:
-            return True
-    return False
+    tiles_to_remove = []
+    match = False
+    for a in range(4):
+        for b in range(4):
+            if a == b:
+                continue
+            elif neighbors[a][0] == "Edge":
+                continue
+            elif neighbors[a][0] == neighbors[b][0]:
+                match = True
+                tiles_to_remove.append(neighbors[a][1])
+                tiles_to_remove.append(neighbors[b][1])
+
+    for tile in tiles_to_remove:
+        color_array[tile[1]][tile[0]] = "Empty"
+
+    return match
+
+
+
+
+    # color_counts = Counter(item for item in neighbors if item != "Edge")
+    # for count in color_counts.values():
+    #     if count == 2 or count == 4:
+    #         return True
+    # return False
 
 
 if __name__ == '__main__':
@@ -144,8 +169,16 @@ if __name__ == '__main__':
                     if check_neighbors(colors, (j, i)):
                         ag.moveTo(tiles[i][j])
                         ag.click()
-                        time.sleep(0.6)
-                        set_colors(colors)
+                        # time.sleep(0.6)  # ONLY IF SETTING COLORS EVERY CYCLE
+                        # set_colors(colors)
+                        contains_only_edges = True
+                        for row in colors:
+                            for element in row:
+                                if element != "Edge":
+                                    contains_only_edges = False
+                                    break
+                        if contains_only_edges:
+                            break
 
 
 
